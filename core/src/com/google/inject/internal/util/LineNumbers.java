@@ -42,6 +42,8 @@ import org.objectweb.asm.Opcodes;
  */
 final class LineNumbers {
 
+  private static final int ASM_API_LEVEL = Opcodes.ASM7;
+
   private final Class type;
   private final Map<String, Integer> lines = Maps.newHashMap();
   private String source;
@@ -65,6 +67,10 @@ final class LineNumbers {
       if (in != null) {
         try {
           new ClassReader(in).accept(new LineNumberReader(), ClassReader.SKIP_FRAMES);
+        } catch (UnsupportedOperationException ignored) {
+          // We may be trying to inspect classes that were compiled with a more recent version
+          // of javac than our ASM supports.  If that happens, just ignore the class and don't
+          // capture line numbers.
         } finally {
           try {
             in.close();
@@ -141,7 +147,7 @@ final class LineNumbers {
     private String name;
 
     LineNumberReader() {
-      super(Opcodes.ASM6);
+      super(ASM_API_LEVEL);
     }
 
     @Override
@@ -200,7 +206,7 @@ final class LineNumbers {
 
     class LineNumberMethodVisitor extends MethodVisitor {
       LineNumberMethodVisitor() {
-        super(Opcodes.ASM6);
+        super(ASM_API_LEVEL);
       }
 
       @Override
@@ -231,7 +237,7 @@ final class LineNumbers {
 
     class LineNumberAnnotationVisitor extends AnnotationVisitor {
       LineNumberAnnotationVisitor() {
-        super(Opcodes.ASM6);
+        super(ASM_API_LEVEL);
       }
 
       @Override
